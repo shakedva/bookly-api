@@ -11,7 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
-.env
+nodemon.json
 
 # Editor directories and files
 .vscode/*
