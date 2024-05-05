@@ -8,11 +8,6 @@ const bookSchema = new Schema({
     isbn: { type: String },
     pageCount: { type: Number, required: true, min: 0},
     image: { type: String }, //TODO required: true
-    review: { type: String },
-    quotes: [{ type: String }],
-    notes: [{ type: String }],
-    characters: [{ type: String }], // TODO  array of JSONs
-    // creator: { type: mongoose.Types.ObjectId, required: true, ref: 'User' },
 });
 
 module.exports = mongoose.model('Book', bookSchema);

@@ -4,9 +4,18 @@ const Book = require('../models/book');
 const HttpStatusCodes = require('../utils/httpStatusCodes');
 const HttpError = require('../models/http-error');
 
-const getBookById = (req, res) => {
+const getBookById = async (req, res, next) => {
     const bookId = req.params.bid;
-    res.json({ bookId: bookId });
+    let book;
+    try {
+        book = await Book.findById(bookId);
+    } catch (err) {
+        return next(new HttpError('Could not find book', HttpStatusCodes.INTERNAL_SERVER_ERROR));
+    }
+    if (!book) {
+        return next(new HttpError('Could not find book for the provided id', HttpStatusCodes.INTERNAL_SERVER_ERROR));
+    }
+    res.json({ book: book.toObject({ getters: true }) });
 };
 
 
@@ -27,7 +36,7 @@ const createBook = async (req, res, next) => {
     } catch (err) {
         return next(new HttpError('Could not save book', HttpStatusCodes.INTERNAL_SERVER_ERROR));
     }
-    res.status(201).json({ createdBook });
+    res.status(HttpStatusCodes.CREATED).json({ createdBook });
 };
 
 const updateBook = async (req, res, next) => {
@@ -53,7 +62,7 @@ const updateBook = async (req, res, next) => {
     } catch (err) {
         return next(new HttpError('Could not edit the book', HttpStatusCodes.INTERNAL_SERVER_ERROR));
     }
-    res.status(200).json({ book: book.toObject({ getters: true }) });
+    res.status(HttpStatusCodes.OK).json({ book: book.toObject({ getters: true }) });
 };
 
 const deleteBook = async (req, res, next) => {
@@ -61,6 +70,9 @@ const deleteBook = async (req, res, next) => {
     let book;
     try {
         book = await Book.findById(bookId);
+        if(!book) {
+            return next(new HttpError('Could find the book for the provided id', HttpStatusCodes.INTERNAL_SERVER_ERROR));
+        }
         const sess = await mongoose.startSession();
         sess.startTransaction();
         await book.deleteOne({ session: sess });
@@ -68,7 +80,7 @@ const deleteBook = async (req, res, next) => {
     } catch (err) {
         return next(new HttpError('Could delete the book', HttpStatusCodes.INTERNAL_SERVER_ERROR));
     }
-    res.status(200).json({ message: "Deleted book"});
+    res.status(HttpStatusCodes.OK).json({ message: "Deleted book" });
 };
 
 exports.getBookById = getBookById;
