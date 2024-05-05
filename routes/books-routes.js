@@ -1,5 +1,5 @@
 const express = require('express');
-const {check} = require('express-validator');
+const { check } = require('express-validator');
 const booksControllers = require('../controllers/books-controllers');
 const router = express.Router();
 
@@ -15,6 +15,7 @@ router.post('/',
     booksControllers.createBook
 );
 
+router.patch('/:bid', booksControllers.updateBook);
 
 
 module.exports = router;

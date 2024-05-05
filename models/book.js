@@ -6,7 +6,7 @@ const bookSchema = new Schema({
     authors: [{ type: String, required: true }],
     description: { type: String, required: true },
     isbn: { type: String },
-    pageCount: { type: Number, required: true },
+    pageCount: { type: Number, required: true, min: 0},
     image: { type: String }, //TODO required: true
     review: { type: String },
     quotes: [{ type: String }],
