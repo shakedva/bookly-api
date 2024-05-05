@@ -17,5 +17,6 @@ router.post('/',
 
 router.patch('/:bid', booksControllers.updateBook);
 
+router.delete('/:bid', booksControllers.deleteBook);
 
 module.exports = router;

@@ -44,10 +44,9 @@ const updateBook = async (req, res, next) => {
     }
     // TODO check if the user can update the book
 
-    const { pageCount, description, review } = req.body;
+    const { pageCount, description } = req.body;
     if (pageCount) book.pageCount = pageCount;
     if (description) book.description = description;
-    if (review) book.review = review;
 
     try {
         await book.save();
@@ -57,6 +56,22 @@ const updateBook = async (req, res, next) => {
     res.status(200).json({ book: book.toObject({ getters: true }) });
 };
 
+const deleteBook = async (req, res, next) => {
+    const bookId = req.params.bid;
+    let book;
+    try {
+        book = await Book.findById(bookId);
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        await book.deleteOne({ session: sess });
+        await sess.commitTransaction();
+    } catch (err) {
+        return next(new HttpError('Could delete the book', HttpStatusCodes.INTERNAL_SERVER_ERROR));
+    }
+    res.status(200).json({ message: "Deleted book"});
+};
+
 exports.getBookById = getBookById;
 exports.createBook = createBook;
 exports.updateBook = updateBook;
+exports.deleteBook = deleteBook;
