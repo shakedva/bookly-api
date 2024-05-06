@@ -3,12 +3,14 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const booksRoutes = require('./routes/books-routes');
+const usersRoutes = require('./routes/users-routes');
 
 const app = express();
 
 app.use(bodyParser.json());
 
 app.use('/api/books', booksRoutes);
+app.use('/api/users', usersRoutes);
 
 // Middleware to handle errors that occur.
 app.use((error, req, res, next) => {
