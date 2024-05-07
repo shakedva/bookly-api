@@ -7,19 +7,28 @@ const HttpError = require('../models/http-error');
 
 const getBookById = async (req, res, next) => {
     const bookId = req.params.bid;
-    let book;
     try {
-        book = await Book.findById(bookId);
+        const book = await Book.findById(bookId);
+        if (!book) {
+            return next(new HttpError('Could not find book for the provided id', HttpStatusCodes.NOT_FOUND));
+        }
+        res.json({ book: book.toObject({ getters: true }) });
     } catch (err) {
         return next(new HttpError('Could not find book', HttpStatusCodes.INTERNAL_SERVER_ERROR));
     }
-    if (!book) {
-        return next(new HttpError('Could not find book for the provided id', HttpStatusCodes.INTERNAL_SERVER_ERROR));
-    }
-    res.json({ book: book.toObject({ getters: true }) });
 };
 
 const getUserBooks = async (req, res, next) => {
+    const userId = req.params.uid;
+    try {
+        const user = await User.findById(userId).populate('books');
+        if (!user || user.books.length === 0) {
+            return next(new HttpError('User not found or has no books', HttpStatusCodes.NOT_FOUND));
+        }
+        res.json({ books: user.books.map(book => book.toObject({ getters: true })) });
+    } catch (err) {
+        return next(new HttpError('Could not find the user', HttpStatusCodes.INTERNAL_SERVER_ERROR));
+    }
 };
 
 const createBook = async (req, res, next) => {
