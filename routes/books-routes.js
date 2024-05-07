@@ -5,6 +5,8 @@ const router = express.Router();
 
 router.get('/:bid', booksControllers.getBookById);
 
+router.get('/user/:uid', booksControllers.getUserBooks);
+
 router.post('/',
     [
         check('title').not().isEmpty(),

@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const Book = require('../models/book');
+const User = require('../models/user');
 const HttpStatusCodes = require('../utils/httpStatusCodes');
 const HttpError = require('../models/http-error');
 
@@ -18,20 +19,33 @@ const getBookById = async (req, res, next) => {
     res.json({ book: book.toObject({ getters: true }) });
 };
 
+const getUserBooks = async (req, res, next) => {
+};
 
 const createBook = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return next(new HttpError('Invalid inputs', HttpStatusCodes.UNPROCESSABLE_ENTITY));
     }
-    const { title, authors, description, pageCount, isbn, image } = req.body;
+    const { title, authors, description, pageCount, isbn, image, creator } = req.body;
     const createdBook = new Book({
-        title, authors, description, pageCount, isbn, image
+        title, authors, description, pageCount, isbn, image, creator
     });
+    let user;
+    try {
+        user = await User.findById(creator);
+    } catch (err) {
+        return next(new HttpError('Could not find the user', HttpStatusCodes.INTERNAL_SERVER_ERROR));
+    }
+    if (!user) {
+        return next(new HttpError('Could not find the user', HttpStatusCodes.NOT_FOUND));
+    }
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
         await createdBook.save({ session: sess });
+        user.books.push(createdBook._id);
+        await user.save({ session: sess });
         await sess.commitTransaction();
     } catch (err) {
         return next(new HttpError('Could not save book', HttpStatusCodes.INTERNAL_SERVER_ERROR));
@@ -70,7 +84,7 @@ const deleteBook = async (req, res, next) => {
     let book;
     try {
         book = await Book.findById(bookId);
-        if(!book) {
+        if (!book) {
             return next(new HttpError('Could find the book for the provided id', HttpStatusCodes.INTERNAL_SERVER_ERROR));
         }
         const sess = await mongoose.startSession();
@@ -84,6 +98,7 @@ const deleteBook = async (req, res, next) => {
 };
 
 exports.getBookById = getBookById;
+exports.getUserBooks = getUserBooks;
 exports.createBook = createBook;
 exports.updateBook = updateBook;
 exports.deleteBook = deleteBook;
